@@ -58,26 +58,10 @@ func (userCart *UserCart) AddItemToCart(prod *entity.Product, qty int) (*vo.Cart
 		}
 	}
 
-	// if err := userCart.UpdateItemInCart(&vo.CartItem{
-	// 	ProdID:   prod.ID,
-	// 	ProdName: prod.Name,
-	// 	Qty:      qty,
-	// 	Price:    prod.Price,
-	// 	Disc:     prod.Disc,
-	// }); err != nil {
-	// 	userCart.cart.Items = append(userCart.cart.Items, addedItem)
-	// 	switch err.(type) {
-	// 	case *e.ErrNoData:
-	// 		return addedItem, nil
-	// 	default:
-	// 		return nil, err
-	// 	}
-	// }
 	if qtyOverride {
 		return addedItem, e.NewErrDuplicateData("item exists, updated amount of cart existing item")
 	}
 	return addedItem, nil
-	// return addedItem, e.NewErrDuplicateData("item exists, updated existing item")
 }
 
 func (userCart *UserCart) UpdateItemInCart(item *vo.CartItem) error {
