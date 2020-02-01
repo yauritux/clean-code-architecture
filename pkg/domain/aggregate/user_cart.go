@@ -53,6 +53,7 @@ func (userCart *UserCart) AddItemToCart(prod *entity.Product, qty int) (*vo.Cart
 		if prod.ID == v.ProdID {
 			userCart.cart.Items[i].Qty = userCart.cart.Items[i].Qty + qty
 			addedItem.Qty = userCart.cart.Items[i].Qty
+			userCart.cart.Items[i] = addedItem
 			qtyOverride = true
 			break
 		}
@@ -61,6 +62,7 @@ func (userCart *UserCart) AddItemToCart(prod *entity.Product, qty int) (*vo.Cart
 	if qtyOverride {
 		return addedItem, e.NewErrDuplicateData("item exists, updated amount of cart existing item")
 	}
+	userCart.cart.Items = append(userCart.cart.Items, addedItem)
 	return addedItem, nil
 }
 
@@ -88,21 +90,23 @@ func (userCart *UserCart) UpdateItemInCart(item *vo.CartItem) error {
 
 func (userCart *UserCart) RemoveItemFromCart(itemID string) error {
 	if userCart.cart.Items == nil || len(userCart.cart.Items) == 0 {
-		return errors.New("cart is still empty")
+		return e.NewErrNoData("cart is still empty")
 	}
 
 	updatedCartItems := make([]*vo.CartItem, 0)
 
 	for i, v := range userCart.cart.Items {
 		if v.ProdID == itemID {
-			updatedCartItems = append(userCart.cart.Items[:i], userCart.cart.Items[i+1:]...)
-			userCart.cart.Items = updatedCartItems
+			updatedCartItems = append(updatedCartItems, v)
+			userCart.cart.Items = append(userCart.cart.Items[:i], userCart.cart.Items[i+1:]...)
 			break
 		}
 	}
+
 	if len(updatedCartItems) == 0 {
 		return fmt.Errorf("cannot find cart item with ID %s", itemID)
 	}
+
 	return nil
 }
 
