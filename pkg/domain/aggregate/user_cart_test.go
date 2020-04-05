@@ -1,21 +1,21 @@
 package aggregate
 
 import (
-	"errors"
 	"testing"
 	"time"
 
 	"github.com/yauritux/cartsvc/pkg/domain/entity"
 	vo "github.com/yauritux/cartsvc/pkg/domain/valueobject"
 	"github.com/yauritux/cartsvc/pkg/sharedkernel/enum"
-	e "github.com/yauritux/cartsvc/pkg/sharedkernel/error"
+
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 var u *entity.User
 var c *entity.Cart
 var p *entity.Product
 
-func init() {
+func setup() {
 	u = &entity.User{
 		UserID:   "yauritux",
 		Username: "Yauri Attamimi",
@@ -55,171 +55,169 @@ func init() {
 	}
 }
 
-func TestNewUserCart(t *testing.T) {
-	userCart := NewUserCart(u, c)
-	if userCart.cart.Status != enum.Open {
-		t.Errorf("initial cart status should be %s, got %s", enum.Open, userCart.cart.Status)
-	}
-	if userCart.user != u {
-		t.Errorf("expected user %v, got %v", u, userCart.user)
-	}
-	if userCart.cart != c {
-		t.Errorf("expected cart %v, got %v", c, userCart.cart)
-	}
-}
+func TestSpec(t *testing.T) {
 
-func TestAddItemToCartOutOfStock(t *testing.T) {
-	userCart := NewUserCart(u, c)
-	_, err := userCart.AddItemToCart(p, 105)
-	if err == nil {
-		t.Errorf("expected got error of %v, but no error is thrown", errors.New("out of stock"))
-	}
-}
-
-func TestAddItemToCartMissingCartSessionID(t *testing.T) {
-	c.ID = ""
-	userCart := NewUserCart(u, c)
-	_, err := userCart.AddItemToCart(p, 10)
-	if err == nil {
-		t.Error("expected got error, but no error is thrown")
-	}
-}
-
-func TestAddITemToCartMissingCartUserID(t *testing.T) {
-	c.UserID = ""
-	userCart := NewUserCart(u, c)
-	_, err := userCart.AddItemToCart(p, 5)
-	if err == nil {
-		t.Error("expected got error, but no error is thrown")
-	}
-}
-
-func TestAddItemToCartMissingUserID(t *testing.T) {
-	u.UserID = ""
-	userCart := NewUserCart(u, c)
-	_, err := userCart.AddItemToCart(p, 5)
-	if err == nil {
-		t.Error("expected got error, but no error is thrown")
-	}
-}
-
-func TestAddItemToCartUnopenedCart(t *testing.T) {
-	c.Status = enum.Closed
-	userCart := NewUserCart(u, c)
-	_, err := userCart.AddItemToCart(p, 5)
-	if err == nil {
-		t.Error("expected got error, but no error is thrown")
-	}
-}
-
-func TestAddItemToCart(t *testing.T) {
-	userCart := NewUserCart(u, c)
-	addedItem, err := userCart.AddItemToCart(p, 5)
-	if err != nil {
-		t.Errorf("Expected no error, but got error of %v", err)
-	}
-	if addedItem.ProdID != p.ID {
-		t.Errorf("Expected product id of %s, got %s", p.ID, addedItem.ProdID)
-	}
-	if addedItem.Qty != 5 {
-		t.Errorf("Expected added qty = %d, got %d", 5, addedItem.Qty)
-	}
-}
-
-func TestAddItemToCartExistingItem(t *testing.T) {
-	userCart := NewUserCart(u, c)
-	userCart.AddItemToCart(p, 5)
-	addedItem, err := userCart.AddItemToCart(p, 2)
-	if err == nil {
-		t.Errorf("Expected got error of %v, but no error is thrown", e.ErrDuplicateData{})
-	}
-	if addedItem.Qty != 7 {
-		t.Errorf("Expected qty of %d, got %d", 7, addedItem.Qty)
-	}
-}
-
-func TestUpdateItemInCartEmptyCartItems(t *testing.T) {
-	userCart := NewUserCart(u, c)
-	err := userCart.UpdateItemInCart(&vo.CartItem{
-		ProdID:   "001",
-		ProdName: "Shuriken",
-		Qty:      5,
-		Price:    125.5,
-		Disc:     0.0,
+	Convey("Given a new cart object", t, func() {
+		setup()
+		userCart := NewUserCart(u, c)
+		Convey("Cart initial status should equal to Open", func() {
+			So(userCart.cart.Status, ShouldEqual, enum.Open)
+		})
+		Convey("Cart user should not be empty", func() {
+			So(userCart.user, ShouldNotBeEmpty)
+			So(userCart.user, ShouldEqual, u)
+		})
+		Convey("Cart object should not be empty", func() {
+			So(userCart.cart, ShouldNotBeEmpty)
+			So(userCart.cart, ShouldEqual, c)
+		})
 	})
-	if err == nil {
-		t.Errorf("Expected got error of %v, but no error is thrown", e.ErrNoData{})
-	}
-}
 
-func TestUpdateItemInCartNonExistingItem(t *testing.T) {
-	userCart := NewUserCart(u, c)
-	userCart.AddItemToCart(p, 5)
-	err := userCart.UpdateItemInCart(&vo.CartItem{
-		ProdID:   "002",
-		ProdName: "Katana",
-		Qty:      3,
-		Price:    750.75,
-		Disc:     0.0,
+	Convey("Given adding an item to cart", t, func() {
+
+		Convey("Negative Scenarios", func() {
+			setup()
+			userCart := NewUserCart(u, c)
+			Convey("When item is out of stock", func() {
+				Convey("Should return error", func() {
+					_, err := userCart.AddItemToCart(p, 105)
+					So(err, ShouldNotBeEmpty)
+				})
+			})
+			Convey("When cart session id is missing", func() {
+				Convey("Should return error", func() {
+					c.ID = ""
+					_, err := userCart.AddItemToCart(p, 10)
+					So(err, ShouldNotBeEmpty)
+				})
+			})
+			Convey("When user id is missing", func() {
+				Convey("Should return error", func() {
+					c.UserID = ""
+					_, err := userCart.AddItemToCart(p, 5)
+					So(err, ShouldNotBeEmpty)
+				})
+			})
+			Convey("When cart is closed, means all items within cart is settled/paid", func() {
+				Convey("Should return error", func() {
+					c.Status = enum.Closed
+					_, err := userCart.AddItemToCart(p, 5)
+					So(err, ShouldNotBeEmpty)
+				})
+			})
+		})
+
+		Convey("Positive Scenarios", func() {
+			setup()
+			userCart := NewUserCart(u, c)
+			Convey("When new item is added", func() {
+				Convey("requested item should exist within the cart", func() {
+					addedItem, err := userCart.AddItemToCart(p, 5)
+					So(err, ShouldBeEmpty)
+					So(addedItem.ProdID, ShouldEqual, p.ID)
+					So(addedItem.Qty == 5, ShouldBeTrue)
+				})
+			})
+			Convey("When the same item already exist inside the cart", func() {
+				userCart.AddItemToCart(p, 5)
+				Convey("should update the existing cart's item quantity with the one being added", func() {
+					addedItem, err := userCart.AddItemToCart(p, 2)
+					So(err, ShouldNotBeEmpty)
+					So(addedItem.Qty == 7, ShouldBeTrue)
+				})
+			})
+		})
 	})
-	if err == nil {
-		t.Errorf("Expected got error of %v, but no error is thrown", e.ErrNoData{})
-	}
-}
 
-func TestUpdateItemInCart(t *testing.T) {
-	userCart := NewUserCart(u, c)
-	userCart.AddItemToCart(p, 5)
-	err := userCart.UpdateItemInCart(&vo.CartItem{
-		ProdID:   p.ID,
-		ProdName: p.Name,
-		Qty:      3,
-		Price:    p.Price,
-		Disc:     p.Disc,
+	Convey("Given update the cart item", t, func() {
+
+		Convey("Negative Scenarios", func() {
+			setup()
+			userCart := NewUserCart(u, c)
+
+			Convey("When cart is empty", func() {
+				Convey("Should return error with message cart still empty", func() {
+					err := userCart.UpdateItemInCart(
+						&vo.CartItem{
+							ProdID:   "001",
+							ProdName: "Shuriken",
+							Qty:      5,
+							Price:    125.5,
+							Disc:     0.0,
+						},
+					)
+					So(err, ShouldNotBeEmpty)
+					So(err.Error(), ShouldEqual, "cart is still empty")
+				})
+			})
+
+			Convey("Item does not exist in the cart", func() {
+				Convey("Should return error with message cannot find cart item", func() {
+					userCart.AddItemToCart(p, 5)
+					err := userCart.UpdateItemInCart(&vo.CartItem{
+						ProdID:   "002",
+						ProdName: "Katana",
+						Qty:      3,
+						Price:    750.75,
+						Disc:     0.0,
+					})
+					So(err, ShouldNotBeEmpty)
+					So(err.Error(), ShouldEqual, "cannot find cart item 002 - Katana within the cart")
+				})
+			})
+		})
+
+		Convey("Positive Scenarios", func() {
+			setup()
+			userCart := NewUserCart(u, c)
+
+			Convey("No error should be thrown", func() {
+				userCart.AddItemToCart(p, 5)
+				err := userCart.UpdateItemInCart(&vo.CartItem{
+					ProdID:   p.ID,
+					ProdName: p.Name,
+					Qty:      3,
+					Price:    p.Price,
+					Disc:     p.Disc,
+				})
+				So(err, ShouldBeEmpty)
+			})
+		})
 	})
-	if err != nil {
-		t.Errorf("Expected no error, but got error of %v", err)
-	}
-}
 
-func TestRemoveItemFromCartEmptyCartItems(t *testing.T) {
-	userCart := NewUserCart(u, c)
-	err := userCart.RemoveItemFromCart("001")
-	if err == nil {
-		t.Errorf("Expected got error of %v, but no error is thrown", e.ErrNoData{})
-	}
-}
+	Convey("Given remove item from cart", t, func() {
 
-func TestRemoveItemFromCartNonExistingItem(t *testing.T) {
-	userCart := NewUserCart(u, c)
-	userCart.AddItemToCart(p, 5)
-	err := userCart.RemoveItemFromCart("002")
-	if err == nil {
-		t.Errorf("Expected got error of %v, but no error is thrown", e.ErrNoData{})
-	}
-}
+		Convey("Negative Scenarios", func() {
+			setup()
+			userCart := NewUserCart(u, c)
 
-func TestRemoveItemFromCart(t *testing.T) {
-	userCart := NewUserCart(u, c)
-	userCart.AddItemToCart(p, 5)
-	err := userCart.RemoveItemFromCart(p.ID)
-	if err != nil {
-		t.Errorf("Expected no error, but got error of %v", err)
-	}
-}
+			Convey("When cart is empty", func() {
+				Convey("Should got an error with message cart is still empty", func() {
+					err := userCart.RemoveItemFromCart("001")
+					So(err, ShouldNotBeEmpty)
+					So(err.Error(), ShouldEqual, "cart is still empty")
+				})
+			})
 
-func TestFetchUserInfo(t *testing.T) {
-	userCart := NewUserCart(u, c)
-	user := userCart.FetchUserInfo()
-	if user != u {
-		t.Errorf("Expected user of %#v, got %#v", u, user)
-	}
-}
+			Convey("When trying to remove an unexisting item from the cart", func() {
+				Convey("Should got an error with message cannot find the cart item", func() {
+					userCart.AddItemToCart(p, 5)
+					err := userCart.RemoveItemFromCart("002")
+					So(err, ShouldNotBeEmpty)
+					So(err.Error(), ShouldEqual, "cannot find cart item with ID 002")
+				})
+			})
+		})
 
-func TestFetchCartInfo(t *testing.T) {
-	userCart := NewUserCart(u, c)
-	cart := userCart.FetchCartInfo()
-	if cart != c {
-		t.Errorf("Expected cart of %#v, got %#v", c, cart)
-	}
+		Convey("Positive Scenarios", func() {
+			setup()
+			userCart := NewUserCart(u, c)
+
+			Convey("The item should be removed from the cart", func() {
+				userCart.AddItemToCart(p, 5)
+				err := userCart.RemoveItemFromCart(p.ID)
+				So(err, ShouldBeEmpty)
+			})
+		})
+	})
 }
