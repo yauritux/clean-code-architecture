@@ -3,7 +3,7 @@ package inmem
 import (
 	"github.com/yauritux/cartsvc/pkg/adapter/repository/inmem/model"
 	e "github.com/yauritux/cartsvc/pkg/sharedkernel/error"
-	uc "github.com/yauritux/cartsvc/pkg/usecase"
+	uc "github.com/yauritux/cartsvc/pkg/usecase/products"
 )
 
 type ProductRepository struct {

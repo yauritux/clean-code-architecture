@@ -57,70 +57,74 @@ func setup() {
 
 func TestSpec(t *testing.T) {
 
-	Convey("Given a new cart object", t, func() {
+	Convey("1. Given a new cart object", t, func() {
 		setup()
 		userCart := NewUserCart(u, c)
-		Convey("Cart initial status should equal to Open", func() {
+		Convey("-> Cart initial status should equal to Open", func() {
 			So(userCart.cart.Status, ShouldEqual, enum.Open)
 		})
-		Convey("Cart user should not be empty", func() {
+		Convey("-> Cart user should not be empty", func() {
 			So(userCart.user, ShouldNotBeEmpty)
 			So(userCart.user, ShouldEqual, u)
 		})
-		Convey("Cart object should not be empty", func() {
+		Convey("-> Cart object should not be empty", func() {
 			So(userCart.cart, ShouldNotBeEmpty)
 			So(userCart.cart, ShouldEqual, c)
 		})
 	})
 
-	Convey("Given adding an item to cart", t, func() {
+	Convey("2. Given adding an item to cart", t, func() {
 
-		Convey("Negative Scenarios", func() {
+		Convey("-> Negative Scenarios", func() {
 			setup()
 			userCart := NewUserCart(u, c)
-			Convey("When item is out of stock", func() {
-				Convey("Should return error", func() {
-					_, err := userCart.AddItemToCart(p, 105)
+			Convey("-> When item is out of stock", func() {
+				Convey("-> Should return error", func() {
+					res, err := userCart.AddItemToCart(p, 105)
+					So(res, ShouldBeNil)
 					So(err, ShouldNotBeEmpty)
 				})
 			})
-			Convey("When cart session id is missing", func() {
-				Convey("Should return error", func() {
+			Convey("-> When cart session id is missing", func() {
+				Convey("-> Should return error", func() {
 					c.ID = ""
-					_, err := userCart.AddItemToCart(p, 10)
+					res, err := userCart.AddItemToCart(p, 10)
+					So(res, ShouldBeNil)
 					So(err, ShouldNotBeEmpty)
 				})
 			})
-			Convey("When user id is missing", func() {
-				Convey("Should return error", func() {
+			Convey("-> When user id is missing", func() {
+				Convey("-> Should return error", func() {
 					c.UserID = ""
-					_, err := userCart.AddItemToCart(p, 5)
+					res, err := userCart.AddItemToCart(p, 5)
+					So(res, ShouldBeNil)
 					So(err, ShouldNotBeEmpty)
 				})
 			})
-			Convey("When cart is closed, means all items within cart is settled/paid", func() {
-				Convey("Should return error", func() {
+			Convey("-> When cart is closed, means all items within cart is settled/paid", func() {
+				Convey("-> Should return error", func() {
 					c.Status = enum.Closed
-					_, err := userCart.AddItemToCart(p, 5)
+					res, err := userCart.AddItemToCart(p, 5)
+					So(res, ShouldBeNil)
 					So(err, ShouldNotBeEmpty)
 				})
 			})
 		})
 
-		Convey("Positive Scenarios", func() {
+		Convey("-> Positive Scenarios", func() {
 			setup()
 			userCart := NewUserCart(u, c)
-			Convey("When new item is added", func() {
-				Convey("requested item should exist within the cart", func() {
+			Convey("-> When new item is added", func() {
+				Convey("-> requested item should exist within the cart", func() {
 					addedItem, err := userCart.AddItemToCart(p, 5)
 					So(err, ShouldBeEmpty)
 					So(addedItem.ProdID, ShouldEqual, p.ID)
 					So(addedItem.Qty == 5, ShouldBeTrue)
 				})
 			})
-			Convey("When the same item already exist inside the cart", func() {
+			Convey("-> When the same item already exist inside the cart", func() {
 				userCart.AddItemToCart(p, 5)
-				Convey("should update the existing cart's item quantity with the one being added", func() {
+				Convey("-> should update the existing cart's item quantity with the one being added", func() {
 					addedItem, err := userCart.AddItemToCart(p, 2)
 					So(err, ShouldNotBeEmpty)
 					So(addedItem.Qty == 7, ShouldBeTrue)
@@ -129,14 +133,14 @@ func TestSpec(t *testing.T) {
 		})
 	})
 
-	Convey("Given update the cart item", t, func() {
+	Convey("3. Given update the cart item", t, func() {
 
-		Convey("Negative Scenarios", func() {
+		Convey("-> Negative Scenarios", func() {
 			setup()
 			userCart := NewUserCart(u, c)
 
-			Convey("When cart is empty", func() {
-				Convey("Should return error with message cart still empty", func() {
+			Convey("-> When cart is empty", func() {
+				Convey("-> Should return error with message cart still empty", func() {
 					err := userCart.UpdateItemInCart(
 						&vo.CartItem{
 							ProdID:   "001",
@@ -151,8 +155,8 @@ func TestSpec(t *testing.T) {
 				})
 			})
 
-			Convey("Item does not exist in the cart", func() {
-				Convey("Should return error with message cannot find cart item", func() {
+			Convey("-> Item does not exist in the cart", func() {
+				Convey("-> Should return error with message cannot find cart item", func() {
 					userCart.AddItemToCart(p, 5)
 					err := userCart.UpdateItemInCart(&vo.CartItem{
 						ProdID:   "002",
@@ -167,11 +171,11 @@ func TestSpec(t *testing.T) {
 			})
 		})
 
-		Convey("Positive Scenarios", func() {
+		Convey("-> Positive Scenarios", func() {
 			setup()
 			userCart := NewUserCart(u, c)
 
-			Convey("No error should be thrown", func() {
+			Convey("-> No error should be thrown", func() {
 				userCart.AddItemToCart(p, 5)
 				err := userCart.UpdateItemInCart(&vo.CartItem{
 					ProdID:   p.ID,
@@ -185,22 +189,22 @@ func TestSpec(t *testing.T) {
 		})
 	})
 
-	Convey("Given remove item from cart", t, func() {
+	Convey("4. Given remove item from cart", t, func() {
 
-		Convey("Negative Scenarios", func() {
+		Convey("-> Negative Scenarios", func() {
 			setup()
 			userCart := NewUserCart(u, c)
 
-			Convey("When cart is empty", func() {
-				Convey("Should got an error with message cart is still empty", func() {
+			Convey("-> When cart is empty", func() {
+				Convey("-> Should got an error with message cart is still empty", func() {
 					err := userCart.RemoveItemFromCart("001")
 					So(err, ShouldNotBeEmpty)
 					So(err.Error(), ShouldEqual, "cart is still empty")
 				})
 			})
 
-			Convey("When trying to remove an unexisting item from the cart", func() {
-				Convey("Should got an error with message cannot find the cart item", func() {
+			Convey("-> When trying to remove an unexisting item from the cart", func() {
+				Convey("-> Should got an error with message cannot find the cart item", func() {
 					userCart.AddItemToCart(p, 5)
 					err := userCart.RemoveItemFromCart("002")
 					So(err, ShouldNotBeEmpty)
@@ -209,11 +213,11 @@ func TestSpec(t *testing.T) {
 			})
 		})
 
-		Convey("Positive Scenarios", func() {
+		Convey("-> Positive Scenarios", func() {
 			setup()
 			userCart := NewUserCart(u, c)
 
-			Convey("The item should be removed from the cart", func() {
+			Convey("-> The item should be removed from the cart", func() {
 				userCart.AddItemToCart(p, 5)
 				err := userCart.RemoveItemFromCart(p.ID)
 				So(err, ShouldBeEmpty)

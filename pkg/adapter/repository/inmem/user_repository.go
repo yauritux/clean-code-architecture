@@ -2,7 +2,7 @@ package inmem
 
 import (
 	"github.com/yauritux/cartsvc/pkg/adapter/repository/inmem/model"
-	uc "github.com/yauritux/cartsvc/pkg/usecase"
+	uc "github.com/yauritux/cartsvc/pkg/usecase/users"
 )
 
 type UserRepository struct {

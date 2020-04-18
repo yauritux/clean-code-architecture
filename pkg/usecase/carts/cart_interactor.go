@@ -1,4 +1,4 @@
-package usecase
+package carts
 
 import (
 	"errors"
@@ -10,6 +10,7 @@ import (
 	vo "github.com/yauritux/cartsvc/pkg/domain/valueobject"
 	. "github.com/yauritux/cartsvc/pkg/sharedkernel/enum"
 	e "github.com/yauritux/cartsvc/pkg/sharedkernel/error"
+	prodUsecase "github.com/yauritux/cartsvc/pkg/usecase/products"
 )
 
 type CartUsecase struct {
@@ -38,26 +39,26 @@ func NewCartUsecase(r1 repository.CartRepository, r2 repository.ProductRepositor
 	return &CartUsecase{r1, r2}
 }
 
-func (usecase *CartUsecase) FetchUserCart(userID string) (interface{}, error) {
+func (this *CartUsecase) FetchUserCart(userID string) (interface{}, error) {
 	if userID == "" {
 		return nil, e.NewErrNoData("cannot fetch user cart, 'user_id' is missing")
 	}
 
-	cart, err := usecase.cartRepo.FetchUserCart(userID)
+	cart, err := this.cartRepo.FetchUserCart(userID)
 	if err != nil {
 		return nil, err
 	}
 
 	ucCart, ok := cart.(*Cart)
 	if !ok {
-		return nil, e.NewErrConversion("cannt fetch user cart, invalid type of cart usecase model")
+		return nil, e.NewErrConversion("cannot fetch user cart, invalid type of cart usecase model")
 	}
 
 	return ucCart, nil
 }
 
-func (usecase *CartUsecase) AddToCart(userID string, item interface{}) error {
-	userCart, err := usecase.cartRepo.FetchUserCart(userID)
+func (this *CartUsecase) AddToCart(userID string, item interface{}) error {
+	userCart, err := this.cartRepo.FetchUserCart(userID)
 	if err != nil {
 		return err
 	}
@@ -71,12 +72,12 @@ func (usecase *CartUsecase) AddToCart(userID string, item interface{}) error {
 		return errors.New("conversion failed, invalid type of product item usecase model")
 	}
 
-	product, err := usecase.prodRepo.FindByProductID(prodItem.ID)
+	product, err := this.prodRepo.FindByProductID(prodItem.ID)
 	if err != nil {
 		return err
 	}
 
-	ucProduct, ok := product.(*Product)
+	ucProduct, ok := product.(*prodUsecase.Product)
 	if !ok {
 		return errors.New("conversion failed, invalid type of product usecase model")
 	}
@@ -102,13 +103,13 @@ func (usecase *CartUsecase) AddToCart(userID string, item interface{}) error {
 	if err != nil {
 		switch err.(type) {
 		case *e.ErrDuplicateData:
-			return usecase.cartRepo.UpdateItem(cart.FetchCartInfo().ID, buildCartUsecaseItem(addedItem))
+			return this.cartRepo.UpdateItem(cart.FetchCartInfo().ID, buildCartUsecaseItem(addedItem))
 		default:
 			return err
 		}
 	}
 
-	return usecase.cartRepo.AddToCart(cart.FetchCartInfo().ID, buildCartUsecaseItem(addedItem))
+	return this.cartRepo.AddToCart(cart.FetchCartInfo().ID, buildCartUsecaseItem(addedItem))
 }
 
 func buildCartUsecaseItem(item interface{}) *CartItem {

@@ -8,18 +8,19 @@ import (
 	"strconv"
 
 	"github.com/yauritux/cartsvc/pkg/adapter/repository/inmem"
-	uc "github.com/yauritux/cartsvc/pkg/usecase"
+	cartSvc "github.com/yauritux/cartsvc/pkg/usecase/carts"
+	productSvc "github.com/yauritux/cartsvc/pkg/usecase/products"
 )
 
-var prodUsecase *uc.ProductUsecase
+var prodUsecase *productSvc.ProductUsecase
 var cartRepository *inmem.CartRepository
-var cartUsecase *uc.CartUsecase
+var cartUsecase *cartSvc.CartUsecase
 
 func init() {
 	prodRepository := inmem.NewProductRepository()
 	cartRepository = inmem.NewCartRepository("yauritux")
-	prodUsecase = uc.NewProductUsecase(prodRepository)
-	cartUsecase = uc.NewCartUsecase(cartRepository, prodRepository)
+	prodUsecase = productSvc.NewProductUsecase(prodRepository)
+	cartUsecase = cartSvc.NewCartUsecase(cartRepository, prodRepository)
 }
 
 func main() {
@@ -66,7 +67,7 @@ func addItemToCart(r *bufio.Scanner) error {
 	if err != nil {
 		return err
 	}
-	prod, ok := prodFound.(*uc.Product)
+	prod, ok := prodFound.(*productSvc.Product)
 	if !ok {
 		return errors.New("failed to get product from the repository...invalid type of product usecase model")
 	}
@@ -79,7 +80,7 @@ func addItemToCart(r *bufio.Scanner) error {
 		return errors.New("invalid amount")
 	}
 
-	if err := cartUsecase.AddToCart("yauritux", &uc.CartItem{
+	if err := cartUsecase.AddToCart("yauritux", &cartSvc.CartItem{
 		ID:    prod.ID,
 		Name:  prod.Name,
 		Qty:   qty,
@@ -98,7 +99,7 @@ func showCartItems() error {
 	if err != nil {
 		return err
 	}
-	cart, ok := userCart.(*uc.Cart)
+	cart, ok := userCart.(*cartSvc.Cart)
 	if !ok {
 		return errors.New("failed to show cart items, invalid type of cart usecase model")
 	}

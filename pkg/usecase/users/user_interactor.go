@@ -1,4 +1,4 @@
-package usecase
+package users
 
 import (
 	"errors"
@@ -7,7 +7,7 @@ import (
 	. "github.com/yauritux/cartsvc/pkg/sharedkernel/enum"
 )
 
-type UserInteractor struct {
+type UserUsecase struct {
 	repo repository.UserRepository
 }
 
@@ -30,11 +30,11 @@ type Address struct {
 	AddressType AddressType
 }
 
-func NewUserInteractor(r repository.UserRepository) *UserInteractor {
-	return &UserInteractor{r}
+func NewUserUsecase(r repository.UserRepository) *UserUsecase {
+	return &UserUsecase{r}
 }
 
-func (user *UserInteractor) FetchCurrentUser(id string) (interface{}, error) {
+func (user *UserUsecase) FetchCurrentUser(id string) (interface{}, error) {
 	u, err := user.repo.FindByUserID(id)
 	if err != nil {
 		return nil, err

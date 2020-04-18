@@ -1,8 +1,4 @@
-package port
-
-import (
-	uc "github.com/yauritux/cartsvc/pkg/usecase"
-)
+package carts
 
 type CartInputPort interface {
 	FetchUserCart(userID string) (interface{}, error)
@@ -10,5 +6,5 @@ type CartInputPort interface {
 }
 
 type CartOutputPort interface {
-	BuildCartItemRepositoryModel(*uc.CartItem) interface{}
+	BuildCartItemRepositoryModel(*CartItem) interface{}
 }

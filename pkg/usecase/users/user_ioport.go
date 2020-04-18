@@ -1,12 +1,8 @@
-package port
-
-import (
-	uc "github.com/yauritux/cartsvc/pkg/usecase"
-)
+package users
 
 type UserInputPort interface {
 	FetchCurrentUser(id string) (interface{}, error)
-	BuildUserUsecaseModel(interface{}) *uc.User
+	BuildUserUsecaseModel(interface{}) *User
 }
 
 type UserOutputPort interface {

@@ -8,7 +8,7 @@ import (
 	"github.com/lucsky/cuid"
 
 	"github.com/yauritux/cartsvc/pkg/adapter/repository/inmem/model"
-	uc "github.com/yauritux/cartsvc/pkg/usecase"
+	uc "github.com/yauritux/cartsvc/pkg/usecase/carts"
 )
 
 var carts []*model.Cart
