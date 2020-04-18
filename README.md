@@ -14,8 +14,12 @@ Further read: https://medium.com/@yauritux/ddd-part-5-b0caf2437912
 
 ### Run all Unit Tests
 
+From the terminal, execute this following command:
+
 `go test ./...`
 
 ### Test using CLI App
+
+From the terminal, execute this following command:
 
 `go run cmd/cli/main.go`
