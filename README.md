@@ -9,3 +9,13 @@ Here's what the code architecture looks like in the components level:
 ![JANIO HUB Backend Code Architecture](images/janio-clean-code-arch.jpg)
 
 Further read: https://medium.com/@yauritux/ddd-part-5-b0caf2437912
+
+## Usage
+
+### Run all Unit Tests
+
+`go test ./...`
+
+### Test using CLI App
+
+`go run cmd/cli/main.go`
