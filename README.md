@@ -8,8 +8,6 @@ Here's what the code architecture looks like in the components level:
 
 ![JANIO HUB Backend Code Architecture](images/janio-clean-code-arch.jpg)
 
-Further read: https://medium.com/@yauritux/ddd-part-5-b0caf2437912
-
 ## Usage
 
 ### Run all Unit Tests
@@ -23,3 +21,8 @@ From the terminal, execute this following command:
 From the terminal, execute this following command:
 
 `go run cmd/cli/main.go`
+
+## Further Read
+
+- https://medium.com/@yauritux/ddd-part-5-b0caf2437912
+- https://dev.to/yauritux/clean-code-architecture-in-go-9fj
